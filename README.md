@@ -1,12 +1,14 @@
 # open-crd
 
-Open-source, clean-room C/C++ rebuild of the two shipped Chrome Remote Desktop
-artifacts supplied by the operator:
+[![ci](https://github.com/rajbhx/open-crd/actions/workflows/ci.yml/badge.svg)](https://github.com/rajbhx/open-crd/actions/workflows/ci.yml)
 
-| Side | Reference artifact | Version |
-|---|---|---|
-| Receiver (client) | `com.google.chromeremotedesktop_79.0.3945.26...apk` | 79.0.3945.26 |
-| Host (Windows) | `chromeremotedesktophost.msi` | 154.0.8037.40 |
+Open-source rebuild of the two shipped Chrome Remote Desktop artifacts supplied
+by the operator, in the language the ecosystem demands for each side:
+
+| Side | Language | Reference artifact | Version |
+|---|---|---|---|
+| Receiver (client) | C/C++ (`receiver-cpp/`) | `com.google.chromeremotedesktop_79.0.3945.26...apk` | 79.0.3945.26 |
+| Host (Windows) | Rust (`host-rs/`) | `chromeremotedesktophost.msi` | 154.0.8037.40 |
 
 The rebuild is driven by REA evidence extracted from those artifacts
 (see `docs/EVIDENCE.md` and `docs/PROTOCOL.md`).
@@ -19,31 +21,33 @@ strictly as protocol evidence.
 
 - [x] Open-source charter + MIT license
 - [x] Reference artifact inventory + REA evidence index
+- [x] Receiver scaffold (C/C++, CMake) — builds in CI
+- [x] Host scaffold (Rust, zero dependencies) — builds in CI
+- [x] GitHub Actions: both projects build, smoke-run, and publish artifacts
 - [ ] Protocol dossier (host registration, FTL signaling, session transport)
-- [ ] Host: C/C++ implementation (registration, signaling, session)
-- [ ] Receiver: C/C++ implementation (auth, host list, session view)
-- [ ] Reproducible builds (CMake + MinGW)
+- [ ] Receiver: auth, host list, session view
+- [ ] Host: registration, signaling, session
 
-## Layout (planned)
+## Layout
 
 ```
-include/       public headers
-src/common/    logging, config, platform utilities
-src/directory/ directory service (host list, registration, heartbeats)
-src/auth/      OAuth device/host token flows
-src/ftl/       FTL signaling (websocket + protobuf framing)
-src/session/   session transport plumbing
-src/host/      Windows host entrypoint
-src/receiver/  receiver (client) entrypoint
+receiver-cpp/  C/C++ receiver (client) — CMake project
+host-rs/       Rust Windows host — Cargo project, zero dependencies
 docs/          protocol dossier + evidence index
+.github/       CI workflows
 ```
 
-## Build
+Planned modules per side (details in each subproject README):
+`config`, `auth`, `directory`, `ftl` (signaling), `session` (transport).
 
-```powershell
-cmake -S . -B build -G "MinGW Makefiles"
-cmake --build build
-```
+## Builds
+
+All builds run in CI (GitHub Actions) — see
+[Actions](https://github.com/rajbhx/open-crd/actions). Published workflow
+artifacts:
+
+- `crd-receiver-windows-x64` — self-contained x64 executable (UCRT64 MinGW)
+- `crd-host-windows-x64` — self-contained x64 executable (static CRT)
 
 ## Legal
 

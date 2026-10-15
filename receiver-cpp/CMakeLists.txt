@@ -18,3 +18,8 @@ if(WIN32)
     _CRT_SECURE_NO_WARNINGS
   )
 endif()
+
+if(MINGW)
+  # self-contained executable: no MinGW runtime DLLs are needed beside it
+  target_link_options(crd-receiver PRIVATE -static)
+endif()
