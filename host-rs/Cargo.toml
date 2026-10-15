@@ -1,0 +1,8 @@
+[package]
+name = "crd-host"
+version = "0.1.0"
+edition = "2021"
+description = "Open-source Rust rebuild of the Chrome Remote Desktop Windows host"
+license = "MIT"
+
+[dependencies]

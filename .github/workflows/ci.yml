@@ -1,0 +1,61 @@
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  receiver-cpp:
+    name: receiver (C/C++, MinGW)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: false
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+
+      - name: Configure
+        shell: msys2 {0}
+        run: cmake -S receiver-cpp -B receiver-cpp/build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        shell: msys2 {0}
+        run: cmake --build receiver-cpp/build
+
+      - name: Smoke run
+        shell: msys2 {0}
+        run: ./receiver-cpp/build/crd-receiver.exe status
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: crd-receiver-windows-x64
+          path: receiver-cpp/build/crd-receiver.exe
+          if-no-files-found: error
+
+  host-rs:
+    name: host (Rust, Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Build
+        run: cargo build --release --manifest-path host-rs/Cargo.toml
+
+      - name: Smoke run
+        run: ./host-rs/target/release/crd-host.exe status
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: crd-host-windows-x64
+          path: host-rs/target/release/crd-host.exe
+          if-no-files-found: error

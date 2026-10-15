@@ -1,0 +1,31 @@
+# build output
+build/
+out/
+
+# reference artifacts (never committed)
+reference/
+
+# binaries / objects
+*.o
+*.obj
+*.a
+*.lib
+*.exe
+*.dll
+*.pdb
+*.ilk
+
+# IDE / editor
+.vs/
+.vscode/
+.idea/
+*.user
+*.swp
+
+# OS
+Thumbs.db
+.DS_Store
+
+# build outputs
+/host-rs/target/
+/receiver-cpp/build/
