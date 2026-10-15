@@ -19,6 +19,11 @@ receiver (client) ⇄ FTL signaling ⇄ session transport (WebRTC) ⇄ host
 - Connection model: **outbound only** — the host dials Google's FTL signaling
   service and then establishes a peer-to-peer (or relayed) WebRTC session.
   Nothing SSH-based; see §4.1 for the exclusion evidence.
+- Process layout **(observed, REA/Ghidra)**:
+  `remoting_host.exe` is a small x86 launcher whose only substantive import is
+  `REMOTING_CORE.DLL::remoting::HostMain`; the engine (signaling, transport,
+  sessions, UI) lives in `remoting_core.dll` — `remoting::HostMain` is the
+  engine entry point.
 - ⏳ full message-flow trace
 
 ## 1. Authentication & credentials

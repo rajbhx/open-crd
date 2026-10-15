@@ -74,3 +74,43 @@ Key result: **no SSH** (`SSH-2.0`/`libssh`/`openssh`/`sshd`/`putty` all 0;
 the single real `ssh` identifier lives in the remote-security-key module) and a
 strong WebRTC stack presence (WebRTC/DTLS/SRTP/SCTP/ICE/STUN/TURN + FTL
 signaling), consistent with Chrome Remote Desktop's published architecture.
+
+## Ghidra-level analysis of the host engine (REA / Ghidra 12.1.4)
+
+Environment and tuning (read-only "Windows P0" boundary):
+
+- Ghidra 12.1.4 PUBLIC + Eclipse Temurin JDK 21; scoped `rea doctor` checks all
+  healthy (headless mode, `win_x86_64` decompiler, native process authority
+  verified).
+- `REA_GHIDRA_STARTUP_TIMEOUT_MS=3600000` — the stock 330 s provider deadline
+  is far below the engine's import+analysis cost on this 4 GB host. A
+  default-profile cold-import attempt on `remoting_core.dll` hit
+  `provider_timeout` at exactly 30:00 (operation `list_documents`), confirming
+  the need for a longer deadline and a trimmed analyzer set.
+- `REA_GHIDRA_DISABLED_ANALYZERS="Decompiler Parameter ID,Decompiler Switch
+  Analysis,WindowsResourceReference"` — decompiler-heavy passes that do not
+  contribute string/symbol/import/transport evidence.
+- The deep engine analysis runs in a detached driver process (own REA MCP
+  server + Ghidra session), so editor restarts observed during this session
+  cannot interrupt the import; results are appended below as they land.
+
+`remoting_host.exe` launcher (74,392 bytes, sha256
+`1385d0d97cadff8c7cbffe25f010e503b028ac0e2952b634cd75fd860b796d7e`):
+
+- Imports: `REMOTING_CORE.DLL::remoting::HostMain` plus 10 KERNEL32 stubs — the
+  shipped host executable is a loader for the engine DLL.
+- `search_strings "ssh"` → 0 matches; `search_procedures "ssh"` → 0 matches.
+  (No PDB ships with the binaries; name-level absence complements a slower
+  tooling caveat, see: lighter analysis profiles should treat "no matching
+  symbol" as weaker than the string-sweep evidence in `docs/PROTOCOL.md` §4.1.)
+- The engine reports Chromium branch `8037`
+  (`…u_efs/branch-heads/8037@{#1026}_0040f9ac+0x54`), matching MSI product
+  version 154.0.8037.40.
+- Evidence IDs (session ledger): overview
+  `ev_4638e329dc477bf302c128ece65683c8756b02fb35d5434c1cd832fc874b6ca9`;
+  names/imports
+  `ev_5c8847126c82c25351265d054af1713273949b052a200f178435bc4989e0810b`;
+  procedures
+  `ev_483a8688ef3ec2e19938b0d29caeffa8cc48a2463b95bbca8a56e62d522e93b3`;
+  `ssh` string/procedure searches also in the ledger (`ev_b61a1617…`,
+  `ev_d2a0592a…`).
