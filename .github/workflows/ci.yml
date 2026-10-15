@@ -34,7 +34,7 @@ jobs:
         shell: msys2 {0}
         run: ./receiver-cpp/build/crd-receiver.exe status
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: crd-receiver-windows-x64
           path: receiver-cpp/build/crd-receiver.exe
@@ -56,7 +56,7 @@ jobs:
       - name: Smoke run
         run: ./host-rs/target/release/crd-host.exe status
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: crd-host-windows-x64
           path: host-rs/target/release/crd-host.exe
