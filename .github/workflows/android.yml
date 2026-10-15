@@ -1,0 +1,47 @@
+name: android
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  receiver-apk:
+    name: receiver APK (Kotlin, debug)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Accept SDK licenses
+        run: yes | sdkmanager --licenses > /dev/null || true
+
+      - name: Install SDK packages
+        run: sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Build debug APK
+        working-directory: receiver-android
+        run: gradle --no-daemon :app:assembleDebug
+
+      - name: Check APK output
+        working-directory: receiver-android
+        run: |
+          ls -l app/build/outputs/apk/debug/
+          test -f app/build/outputs/apk/debug/app-debug.apk
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: opencrd-receiver-apk-debug
+          path: receiver-android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

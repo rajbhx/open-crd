@@ -1,53 +1,70 @@
 # open-crd
 
 [![ci](https://github.com/rajbhx/open-crd/actions/workflows/ci.yml/badge.svg)](https://github.com/rajbhx/open-crd/actions/workflows/ci.yml)
+[![android](https://github.com/rajbhx/open-crd/actions/workflows/android.yml/badge.svg)](https://github.com/rajbhx/open-crd/actions/workflows/android.yml)
 
-Open-source rebuild of the two shipped Chrome Remote Desktop artifacts supplied
-by the operator, in the language the ecosystem demands for each side:
+Open-source rebuild of the two shipped Chrome Remote Desktop artifacts, in the
+form each side actually needs:
 
-| Side | Language | Reference artifact | Version |
-|---|---|---|---|
-| Receiver (client) | C/C++ (`receiver-cpp/`) | `com.google.chromeremotedesktop_79.0.3945.26...apk` | 79.0.3945.26 |
-| Host (Windows) | Rust (`host-rs/`) | `chromeremotedesktophost.msi` | 154.0.8037.40 |
+| Side | Deliverable | Language | Reference artifact | Version |
+|---|---|---|---|---|
+| Receiver (client) | **Android app — APK** | Kotlin — `receiver-android/` | `com.google.chromeremotedesktop_79.0.3945.26...apk` | 79.0.3945.26 |
+| Receiver (desktop reference) | Windows client | C/C++ — `receiver-cpp/` | (same APK, protocol reference) | — |
+| Host (Windows) | Windows service/CLI | Rust — `host-rs/` | `chromeremotedesktophost.msi` | 154.0.8037.40 |
 
 The rebuild is driven by REA evidence extracted from those artifacts
-(see `docs/EVIDENCE.md` and `docs/PROTOCOL.md`).
+(see [`docs/EVIDENCE.md`](docs/EVIDENCE.md) and [`docs/PROTOCOL.md`](docs/PROTOCOL.md)).
 
-No Google binaries are redistributed in this repository. No Android NDK is used
-anywhere: the receiver target is a Windows/desktop C++ client; the APK is used
-strictly as protocol evidence.
+No Google binaries are redistributed in this repository — the reference
+artifacts are never committed. The Android receiver contains **no NDK code**
+(pure Kotlin/JVM, no native toolchain) and **no Google Play services**: it is
+original code that talks directly to the public remoting services, so the
+signature checks that reject re-signed Google APKs do not apply to it.
 
-## Status — v0.1 (scaffold)
+## Status — v0.1
 
 - [x] Open-source charter + MIT license
 - [x] Reference artifact inventory + REA evidence index
-- [x] Receiver scaffold (C/C++, CMake) — builds in CI
 - [x] Host scaffold (Rust, zero dependencies) — builds in CI
-- [x] GitHub Actions: both projects build, smoke-run, and publish artifacts
+- [x] Desktop receiver scaffold (C/C++, CMake) — builds in CI
+- [x] **Android receiver (Kotlin) — debug APK on every push, signed release APK on tags**
 - [ ] Protocol dossier (host registration, FTL signaling, session transport)
-- [ ] Receiver: auth, host list, session view
+- [ ] Receiver 0.2: OAuth + host directory
+- [ ] Receiver 0.3: FTL signaling
+- [ ] Receiver 0.4: WebRTC session (video/input)
 - [ ] Host: registration, signaling, session
+
+## Releases
+
+APKs are published under [Releases](https://github.com/rajbhx/open-crd/releases):
+`opencrd-receiver-vX.Y.Z.apk` (signed) with `SHA256SUMS.txt`. Install via
+`adb install` or sideload after allowing installation from unknown sources.
+Details: [`receiver-android/README.md`](receiver-android/README.md).
 
 ## Layout
 
 ```
-receiver-cpp/  C/C++ receiver (client) — CMake project
-host-rs/       Rust Windows host — Cargo project, zero dependencies
-docs/          protocol dossier + evidence index
-.github/       CI workflows
+receiver-android/  Android receiver (Kotlin) — the APK deliverable
+receiver-cpp/      desktop reference receiver (C/C++, CMake)
+host-rs/           Rust Windows host — Cargo project, zero dependencies
+docs/              protocol dossier + evidence index
+.github/           CI workflows
 ```
 
-Planned modules per side (details in each subproject README):
+Planned receiver modules (details in each subproject README):
 `config`, `auth`, `directory`, `ftl` (signaling), `session` (transport).
 
 ## Builds
 
 All builds run in CI (GitHub Actions) — see
-[Actions](https://github.com/rajbhx/open-crd/actions). Published workflow
-artifacts:
+[Actions](https://github.com/rajbhx/open-crd/actions).
 
-- `crd-receiver-windows-x64` — self-contained x64 executable (UCRT64 MinGW)
-- `crd-host-windows-x64` — self-contained x64 executable (static CRT)
+- [`android.yml`](.github/workflows/android.yml) — receiver APK (Gradle +
+  Android SDK, **no NDK**), artifact on every push
+- [`release.yml`](.github/workflows/release.yml) — on tag `v*`: signed release
+  APK published as a GitHub Release
+- [`ci.yml`](.github/workflows/ci.yml) — C++ desktop receiver (UCRT64) and
+  Rust host (static CRT), both smoke-run
 
 ## Legal
 

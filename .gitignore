@@ -29,3 +29,10 @@ Thumbs.db
 # build outputs
 /host-rs/target/
 /receiver-cpp/build/
+/receiver-android/.gradle/
+/receiver-android/.kotlin/
+/receiver-android/local.properties
+
+# secrets — never commit signing material
+*.keystore
+*.jks
