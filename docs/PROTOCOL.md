@@ -16,6 +16,9 @@ receiver (client) ⇄ FTL signaling ⇄ session transport (WebRTC) ⇄ host
   `remoting.mojom.ChromotingHostServices`, `remoting.mojom.ChromotingSessionServices`
   over `chromoting.host_services_mojo_ipc`
   (`remoting/host/chromoting_host_services_client.cc`, `..._server.cc`)
+- Connection model: **outbound only** — the host dials Google's FTL signaling
+  service and then establishes a peer-to-peer (or relayed) WebRTC session.
+  Nothing SSH-based; see §4.1 for the exclusion evidence.
 - ⏳ full message-flow trace
 
 ## 1. Authentication & credentials
@@ -51,6 +54,36 @@ receiver (client) ⇄ FTL signaling ⇄ session transport (WebRTC) ⇄ host
   `remoting/codec/webrtc_video_encoder_av1.cc`, `webrtc_video_encoder_vpx.cc`
 - ICE/STUN/TURN machinery **(observed)**: `third_party/webrtc/api/transport/stun.cc`
 - ⏳ channel map (video/control/input/clipboard), codec negotiation
+
+### 4.1 Not SSH — string-sweep evidence (host engine)
+
+Case-insensitive sweep of 44,891 unique strings (≥ 8 chars) from `remoting_core.dll`
+(154.0.8037.40):
+
+| Pattern | Matches |
+|---|---|
+| `SSH-2.0` banner / `libssh` / `openssh` / `sshd` / `putty` / `Secure Shell` | **0** |
+| `webrtc` | 1207 |
+| `PeerConnection` | 148 |
+| `dtls` | 104 |
+| `sctp` | 59 |
+| `srtp` | 78 |
+| `ice_` | 83 |
+| `datachannel` | 49 |
+| `stun:` / `turn:` config URLs | 2 / 1 |
+| `ftl` (signaling) | 81 |
+| `quic` (via Chromium/WebRTC stack) | 1030 |
+| `host_talk` (legacy CRD P2P transport) | 0 |
+| `xmpp` (legacy signaling) | 7 (legacy residue) |
+
+All 55 case-insensitive `ssh` hits are incidental substrings (`Acces**sH**eader`,
+`RemoteAcces**sH**ost`, `RsaP**ssSh**a256`, mRNA compression dictionaries), except
+`ssh_connection_error`, defined inside the remote-security-key module
+(`remoting/host/security_key/security_key_message.cc`) — a legacy identifier from
+the SSH-agent-era "gnubby" design, not a network protocol the host speaks.
+
+Host network imports observed: `WS2_32.dll`, `WinHttpOpen`/`WinHttpConnect` family,
+`getaddrinfo`/`GetAddrInfoExW`, BoringSSL — an outbound client stack only.
 
 ## 5. Helpers & browser integration
 

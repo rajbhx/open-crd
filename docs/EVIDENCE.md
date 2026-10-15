@@ -62,3 +62,15 @@ Google's trust check binds the package to Google's signing key, so re-signed
 copies of Google apps cannot use account/auth services. This is why the rebuild
 targets are Windows/desktop (C/C++ receiver, Rust host) rather than a repackaged
 APK.
+
+## Transport evidence (host engine string sweep)
+
+Method: the 44,891-entry unique-string sweep of `remoting_core.dll`
+(`strings_remoting_core.txt`, ≥ 8 printable chars) was interrogated with
+case-insensitive `Select-String` counts for protocol markers. Findings and the
+full table are recorded in `docs/PROTOCOL.md` §4.1.
+
+Key result: **no SSH** (`SSH-2.0`/`libssh`/`openssh`/`sshd`/`putty` all 0;
+the single real `ssh` identifier lives in the remote-security-key module) and a
+strong WebRTC stack presence (WebRTC/DTLS/SRTP/SCTP/ICE/STUN/TURN + FTL
+signaling), consistent with Chrome Remote Desktop's published architecture.
