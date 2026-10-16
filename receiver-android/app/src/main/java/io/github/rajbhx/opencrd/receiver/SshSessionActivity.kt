@@ -14,7 +14,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import com.jcraft.jsch.ChannelShell
 import com.jcraft.jsch.HostKey
-import com.jcraft.jsch.HostKeyException
+import com.jcraft.jsch.JSchHostKeyException
 import com.jcraft.jsch.HostKeyRepository
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.JSchException
@@ -195,8 +195,8 @@ class SshSessionActivity : Activity() {
         val s = session ?: return
         try {
             val hk = s.hostKey
-            val fp = try { hk.fingerPrint(jsch) } catch (t: Throwable) { "(unavailable)" }
-            post { appendLog("[host key] md5:$fp (pinned on first use)") }
+            val fp = try { hk.getFingerPrint(jsch) } catch (t: Throwable) { "(unavailable)" }
+            post { appendLog("[host key] $fp (pinned on first use)") }
 
             val ch: ChannelShell = try {
                 val c = s.openChannel("shell") as ChannelShell
@@ -266,7 +266,7 @@ class SshSessionActivity : Activity() {
     private fun friendly(e: Throwable): String {
         val m = e.message ?: ""
         return when {
-            e is HostKeyException ->
+            e is JSchHostKeyException ->
                 "saved host key changed! If the server was reinstalled or " +
                     "rekeyed, tap 'Forget saved host key' on the previous screen " +
                     "and connect again."
