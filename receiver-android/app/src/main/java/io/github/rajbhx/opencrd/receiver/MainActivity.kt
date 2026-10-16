@@ -1,6 +1,7 @@
 package io.github.rajbhx.opencrd.receiver
 
 import android.app.Activity
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Build
@@ -45,15 +46,23 @@ class MainActivity : Activity() {
         }
         content.addView(statusLine)
 
-        content.addView(header("Purpose", pad))
+        content.addView(header("Sign in", pad))
         content.addView(
             body(
-                "Open-source Chrome Remote Desktop receiver. This build is the " +
-                    "foundation milestone: it verifies that this device can reach the " +
-                    "public remoting endpoints that a real session will use.",
+                "SSH works today: connect to any computer that runs an SSH server " +
+                    "(Windows OpenSSH, Linux, macOS) and use a command shell. " +
+                    "Google sign-in (Chrome Remote Desktop accounts) lands in the " +
+                    "next milestone.",
                 pad,
             ),
         )
+        content.addView(Button(this).apply {
+            text = "SSH — sign in to a computer"
+            isAllCaps = false
+            setOnClickListener {
+                startActivity(Intent(this@MainActivity, SshConnectActivity::class.java))
+            }
+        })
 
         content.addView(header("Network reachability self-test", pad))
         content.addView(
@@ -72,10 +81,11 @@ class MainActivity : Activity() {
         content.addView(header("Roadmap", pad))
         content.addView(
             body(
-                "0.1  foundation APK + endpoint self-test   (this build)\n" +
-                    "0.2  OAuth device flow + host directory listing\n" +
-                    "0.3  FTL signaling channel (protobuf over TLS)\n" +
-                    "0.4  WebRTC session: video + keyboard/mouse\n" +
+                "0.1  foundation APK + endpoint self-test\n" +
+                    "0.2  SSH sign-in + interactive shell   (this build)\n" +
+                    "0.3  Google sign-in (OAuth) + host directory\n" +
+                    "0.4  FTL signaling channel\n" +
+                    "0.5  WebRTC session: video + keyboard/mouse\n" +
                     "1.0  day-to-day usable receiver",
                 pad,
             ),

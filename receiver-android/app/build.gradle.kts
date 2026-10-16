@@ -7,7 +7,7 @@ plugins {
 // ANDROID_KEYSTORE_BASE64 (see .github/workflows/release.yml). Local builds
 // and debug builds never touch the release key.
 val signingEnabled = System.getenv("ANDROID_KEYSTORE_BASE64") != null
-val appVersionName = System.getenv("OPENCRD_VERSION") ?: "0.1.0"
+val appVersionName = System.getenv("OPENCRD_VERSION") ?: "0.2.0"
 
 android {
     namespace = "io.github.rajbhx.opencrd.receiver"
@@ -17,7 +17,7 @@ android {
         applicationId = "io.github.rajbhx.opencrd.receiver"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
+        versionCode = 2
         versionName = appVersionName
     }
 
@@ -56,6 +56,11 @@ android {
     }
 }
 
-// Intentionally zero library dependencies: no AndroidX, no Google Play
-// services, no native code (no NDK). The APK builds with the plain Android
-// SDK + Kotlin standard library only.
+dependencies {
+    // SSH sign-in: pure-Java JSch fork (BSD-style JSch license), resolved from
+    // Maven Central at build time. No native code — nothing is built with the NDK.
+    implementation("com.github.mwiede:jsch:2.28.8")
+}
+
+// No AndroidX, no Google Play services, no NDK: the APK builds with the plain
+// Android SDK, the Kotlin standard library and the pure-Java SSH library.

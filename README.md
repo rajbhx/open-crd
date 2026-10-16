@@ -18,20 +18,23 @@ The rebuild is driven by REA evidence extracted from those artifacts
 No Google binaries are redistributed in this repository — the reference
 artifacts are never committed. The Android receiver contains **no NDK code**
 (pure Kotlin/JVM, no native toolchain) and **no Google Play services**: it is
-original code that talks directly to the public remoting services, so the
-signature checks that reject re-signed Google APKs do not apply to it.
+original code that talks directly to public services, so the signature checks
+that reject re-signed Google APKs do not apply to it. Connection methods:
+**SSH (live today)** and Google account / Chrome Remote Desktop (next
+milestones).
 
-## Status — v0.1
+## Status — v0.2
 
 - [x] Open-source charter + MIT license
 - [x] Reference artifact inventory + REA evidence index
 - [x] Host scaffold (Rust, zero dependencies) — builds in CI
 - [x] Desktop receiver scaffold (C/C++, CMake) — builds in CI
 - [x] **Android receiver (Kotlin) — debug APK on every push, signed release APK on tags**
+- [x] Receiver 0.2: SSH sign-in + interactive shell
+- [ ] Receiver 0.3: Google sign-in (OAuth) + host directory
+- [ ] Receiver 0.4: FTL signaling
+- [ ] Receiver 0.5: WebRTC session (video/input)
 - [ ] Protocol dossier (host registration, FTL signaling, session transport)
-- [ ] Receiver 0.2: OAuth + host directory
-- [ ] Receiver 0.3: FTL signaling
-- [ ] Receiver 0.4: WebRTC session (video/input)
 - [ ] Host: registration, signaling, session
 
 ## Releases

@@ -1,8 +1,8 @@
 # receiver-android — the receiver APK
 
 The receiver deliverable: an installable Android app (APK) that connects to
-Chrome Remote Desktop hosts. Clean-room Kotlin implementation, driven by the
-REA evidence in [`../docs`](../docs).
+remote machines. Clean-room Kotlin implementation, driven by the REA evidence
+in [`../docs`](../docs).
 
 ## Why Kotlin (and not C/C++)
 
@@ -21,10 +21,10 @@ native code. This also has practical benefits:
   original code talking to public network services.)
 - **No native libraries at all**: the APK is pure JVM bytecode, so it runs on
   every device ABI (arm64, armv7, x86_64, x86) without a single `.so`.
-- For the later WebRTC milestone (v0.4) we will consume a *prebuilt* libwebrtc
-  AAR from Maven (`io.github.webrtc-sdk:android`, the community build used by
-  flutter-webrtc and LiveKit). Consuming a prebuilt binary is not building
-  with the NDK.
+- The SSH client is the pure-Java JSch fork (`com.github.mwiede:jsch`), and
+  the future WebRTC milestone (0.5) will consume a prebuilt libwebrtc AAR from
+  Maven (`io.github.webrtc-sdk:android`). Consuming prebuilt libraries is not
+  building with the NDK.
 
 ## Modules (mirrors `docs/PROTOCOL.md`)
 
@@ -32,10 +32,32 @@ native code. This also has practical benefits:
 |---|---|---|
 | `Endpoints` | done | public signaling/directory endpoints from the evidence |
 | `NetProbe` | done | DNS + TCP + TLS reachability self-test |
-| `auth` | roadmap 0.2 | Google OAuth device flow (no Play services) |
-| `directory` | roadmap 0.2 | host list for the signed-in account |
-| `ftl` | roadmap 0.3 | signaling: protobuf over TLS to `instantmessaging-pa` |
-| `session` | roadmap 0.4 | WebRTC: ICE/DTLS-SRTP, video decode, input channel |
+| `ssh` | done (0.2) | SSH sign-in + interactive shell (pure-Java JSch, no NDK) |
+| `auth` | roadmap 0.3 | Google OAuth device flow (no Play services) |
+| `directory` | roadmap 0.3 | host list for the signed-in account |
+| `ftl` | roadmap 0.4 | signaling: protobuf over TLS to `instantmessaging-pa` |
+| `session` | roadmap 0.5 | WebRTC: ICE/DTLS-SRTP, video decode, input channel |
+
+## SSH sign-in (v0.2.0)
+
+Any machine with an SSH server can be reached: Windows (OpenSSH Server
+feature), Linux, macOS, NAS boxes, routers.
+
+- Auth: password, or a pasted private key (OpenSSH/PEM text; RSA and ECDSA
+  keys work out of the box — ed25519-only servers would need Bouncy Castle,
+  which can be added later if needed).
+- Host keys use trust-on-first-use: the first key seen for an address is
+  pinned; a later change is refused until you use “Forget saved host key” on
+  the connect screen.
+- No password is stored by the app; host/port/username are remembered as
+  convenience defaults only.
+- The shell is a basic terminal: line input + output view with ANSI escape
+  stripping (good for commands; not a full VT emulator yet).
+
+Server side (Windows): Settings → Optional features → “OpenSSH Server”, then
+`Start-Service sshd` (and `Set-Service sshd -StartupType Automatic`). Allow
+password authentication, or install your public key into
+`~/.ssh/authorized_keys`.
 
 ## Build
 
@@ -64,9 +86,8 @@ a backup copy is kept with the operator. Never commit the keystore.
    device (allow installation from unknown sources).
 3. Verify integrity against the attached `SHA256SUMS.txt`.
 
-## What v0.1.0 does
+## Version log
 
-- launches on Android 8.0+ (pure JVM — arm64, armv7, x86_64, x86)
-- reachability self-test against the three public remoting endpoints
-  (DNS + TCP + TLS handshake, including the certificate identity)
-- diagnostics log (device, ABI, Android version, endpoint list)
+- **0.2.0** — SSH sign-in: password/private-key auth, TOFU host-key pinning,
+  interactive shell.
+- **0.1.0** — foundation: endpoint self-test (DNS/TCP/TLS) + diagnostics.
